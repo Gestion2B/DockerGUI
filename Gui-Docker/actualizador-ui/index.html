@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Docker · Panel local</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070b12;
+      --panel: rgba(18, 25, 38, .82);
+      --panel-solid: #121926;
+      --line: rgba(255,255,255,.09);
+      --muted: #8d9aaf;
+      --text: #f5f7fb;
+      --cyan: #55d6e6;
+      --green: #59d99b;
+      --amber: #ffbd66;
+      --red: #ff6f78;
+      --shadow: 0 24px 70px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 12% 5%, rgba(35,129,156,.16), transparent 32rem),
+        radial-gradient(circle at 95% 80%, rgba(57,110,216,.11), transparent 28rem), var(--bg);
+    }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    .shell { width: min(1480px, calc(100% - 40px)); margin: 0 auto; padding: 34px 0 70px; }
+    header { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:30px; }
+    .brand { display:flex; align-items:center; gap:14px; }
+    .mark { width:45px; height:45px; border:1px solid rgba(85,214,230,.42); border-radius:14px; display:grid; place-items:center; background:rgba(85,214,230,.09); box-shadow:inset 0 0 22px rgba(85,214,230,.08); }
+    .mark svg { width:25px; color:var(--cyan); }
+    h1 { margin:0; font-size:clamp(1.45rem,3vw,2.15rem); letter-spacing:-.045em; font-weight:760; }
+    .eyebrow { color:var(--cyan); font-size:.69rem; font-weight:800; letter-spacing:.17em; text-transform:uppercase; margin-bottom:5px; }
+    .subtitle { color:var(--muted); margin:6px 0 0; font-size:.94rem; }
+    .header-actions { display:flex; gap:10px; align-items:center; }
+    .btn { border:1px solid var(--line); background:#172132; border-radius:11px; padding:10px 14px; cursor:pointer; transition:.16s ease; font-weight:680; font-size:.86rem; display:inline-flex; gap:8px; align-items:center; justify-content:center; }
+    .btn:hover:not(:disabled) { transform:translateY(-1px); border-color:rgba(255,255,255,.2); background:#1c293d; }
+    .btn:disabled { opacity:.4; cursor:not-allowed; }
+    .btn-primary { background:var(--cyan); color:#061116; border-color:transparent; }
+    .btn-primary:hover:not(:disabled) { background:#74e4ef; }
+    .btn-danger { color:#ffb2b7; background:rgba(255,111,120,.08); border-color:rgba(255,111,120,.22); }
+    .icon { width:15px; height:15px; }
+    .overview { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:24px; }
+    .metric { background:var(--panel); border:1px solid var(--line); border-radius:15px; padding:17px 18px; backdrop-filter:blur(18px); }
+    .metric-label { color:var(--muted); font-size:.72rem; font-weight:750; letter-spacing:.09em; text-transform:uppercase; }
+    .metric-value { margin-top:8px; font-size:1.35rem; font-weight:760; letter-spacing:-.035em; }
+    .online { color:var(--green); } .offline { color:var(--red); }
+    .toolbar { display:flex; justify-content:space-between; gap:16px; align-items:end; margin:30px 0 14px; }
+    .toolbar h2 { font-size:1rem; margin:0 0 5px; letter-spacing:-.01em; }
+    .toolbar p { color:var(--muted); margin:0; font-size:.82rem; }
+    .projects { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+    .card { min-width:0; background:linear-gradient(145deg,rgba(21,29,44,.96),rgba(13,19,30,.92)); border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:var(--shadow); }
+    .card-top { height:3px; background:linear-gradient(90deg,var(--cyan),transparent 70%); opacity:.82; }
+    .card-body { padding:20px; }
+    .project-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+    .project-name { font-size:1.08rem; font-weight:760; letter-spacing:-.025em; margin:0; overflow-wrap:anywhere; }
+    .project-id { color:var(--muted); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:.72rem; margin-top:5px; }
+    .badge { flex:none; border-radius:999px; padding:6px 9px; font-size:.68rem; font-weight:800; border:1px solid rgba(89,217,155,.2); color:var(--green); background:rgba(89,217,155,.07); }
+    .badge.off { color:var(--muted); border-color:var(--line); background:rgba(255,255,255,.025); }
+    .versions { display:grid; grid-template-columns:1fr 30px 1fr; align-items:center; margin:23px 0 18px; }
+    .version-box { min-width:0; padding:14px; border-radius:13px; background:rgba(255,255,255,.027); border:1px solid rgba(255,255,255,.055); }
+    .version-label { color:var(--muted); font-size:.66rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+    .version-number { margin-top:7px; font-size:1.15rem; font-weight:760; overflow-wrap:anywhere; }
+    .version-box.testing .version-number { color:var(--amber); }
+    .arrow { color:#526078; text-align:center; }
+    .path { color:#718096; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; font-size:.7rem; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; margin:0 0 17px; }
+    .card-meta { display:flex; align-items:center; justify-content:space-between; color:var(--muted); font-size:.78rem; padding-top:15px; border-top:1px solid var(--line); }
+    .card-actions { display:flex; gap:8px; margin-top:15px; }
+    .card-actions .btn { flex:1; }
+    .empty { border:1px dashed rgba(255,255,255,.15); border-radius:18px; padding:55px 24px; text-align:center; color:var(--muted); grid-column:1/-1; }
+    .footerbar { margin-top:24px; padding:14px 2px; display:flex; justify-content:space-between; color:#66748b; font-size:.74rem; }
+    .drawer { position:fixed; inset:0 0 0 auto; width:min(560px,100%); background:#0c121d; border-left:1px solid var(--line); box-shadow:-24px 0 70px rgba(0,0,0,.45); transform:translateX(105%); transition:.25s ease; z-index:20; display:flex; flex-direction:column; }
+    .drawer.open { transform:translateX(0); }
+    .drawer-head { padding:24px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
+    .drawer-title { margin:0; font-size:1.1rem; }
+    .drawer-body { padding:18px 24px 30px; overflow:auto; }
+    .backup { display:flex; gap:13px; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--line); }
+    .backup-version { font-weight:760; }
+    .backup-name { color:var(--muted); font-size:.7rem; margin-top:4px; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; overflow-wrap:anywhere; }
+    .invalid { color:var(--red); font-size:.69rem; margin-top:4px; }
+    .overlay { position:fixed; inset:0; background:rgba(0,0,0,.66); backdrop-filter:blur(8px); display:none; place-items:center; padding:20px; z-index:30; }
+    .overlay.open { display:grid; }
+    .modal { width:min(520px,100%); background:#121a28; border:1px solid rgba(255,255,255,.13); border-radius:20px; box-shadow:0 35px 110px rgba(0,0,0,.58); padding:26px; }
+    .modal-kicker { color:var(--amber); font-size:.7rem; font-weight:850; letter-spacing:.14em; text-transform:uppercase; }
+    .modal h3 { margin:8px 0 9px; font-size:1.35rem; letter-spacing:-.03em; }
+    .modal p { color:var(--muted); line-height:1.6; font-size:.88rem; }
+    .change { margin:18px 0; border:1px solid var(--line); border-radius:13px; padding:14px; display:flex; justify-content:space-between; gap:18px; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:.82rem; }
+    label { display:block; color:#b9c3d3; font-size:.8rem; margin-bottom:8px; }
+    input { width:100%; border:1px solid rgba(255,255,255,.13); background:#090e17; color:var(--text); border-radius:11px; padding:12px 13px; outline:none; }
+    input:focus { border-color:var(--cyan); box-shadow:0 0 0 3px rgba(85,214,230,.09); }
+    .modal-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:20px; }
+    .terminal { background:#080c13; border:1px solid var(--line); border-radius:14px; padding:15px; color:#afbdd0; min-height:230px; white-space:pre-wrap; overflow-wrap:anywhere; font:12px/1.62 ui-monospace,SFMono-Regular,Consolas,monospace; }
+    .toast { position:fixed; left:50%; bottom:26px; transform:translate(-50%,30px); opacity:0; pointer-events:none; background:#1a2638; border:1px solid var(--line); border-radius:12px; padding:12px 16px; box-shadow:var(--shadow); transition:.22s ease; z-index:50; font-size:.84rem; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    .toast.error { border-color:rgba(255,111,120,.34); color:#ffc1c5; }
+    .spinner { width:15px; height:15px; border:2px solid rgba(255,255,255,.25); border-top-color:currentColor; border-radius:50%; animation:spin .7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .subtitle, .toolbar p, .btn, label, .card-meta { font-size:.9rem; }
+    .project-id, .path, .backup-name, .footerbar { font-size:.8rem; }
+    .version-label, .metric-label, .badge { font-size:.78rem; }
+    .header-actions { flex-wrap:wrap; }
+    .tabs { display:flex; gap:8px; margin:26px 0 18px; flex-wrap:wrap; }
+    .tabs .active { background:var(--cyan); color:#071117; }
+    .ext-form { display:grid; grid-template-columns:minmax(180px,1fr) minmax(260px,2fr); gap:14px; margin:6px 0 16px; }
+    .ext-form label { display:block; font-size:.78rem; color:var(--muted); margin-bottom:6px; }
+    .ext-form select { width:100%; border:1px solid rgba(255,255,255,.13); background:#090e17; color:var(--text); border-radius:11px; padding:12px 13px; outline:none; }
+    .ext-state { border-left-color:var(--cyan); }
+    .ext-state.ok { border-left-color:#4ade80; }
+    .ext-state.bad { border-left-color:#f87171; }
+    @media (max-width:720px) { .ext-form { grid-template-columns:1fr; } }
+    .backup-tools { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+    .notice { padding:16px 18px; border:1px solid var(--line); border-left:3px solid var(--amber); background:var(--panel); border-radius:12px; color:#c3cede; font-size:.9rem; line-height:1.6; margin:16px 0; }
+    .db-section { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px; margin-bottom:18px; }
+    .db-heading { display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    .db-heading h2 { font-size:1.1rem; margin:0 0 5px; }
+    .db-heading p { margin:0; color:var(--muted); font-size:.85rem; }
+    .table-wrap { overflow-x:auto; margin-top:18px; }
+    table { width:100%; border-collapse:collapse; text-align:left; font-size:.88rem; }
+    th { color:var(--muted); font-weight:600; padding:12px 10px; border-bottom:1px solid var(--line); }
+    td { padding:16px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+    td:first-child { min-width:210px; max-width:350px; overflow-wrap:anywhere; }
+    td small { display:block; color:var(--muted); margin-top:6px; font-size:.78rem; }
+    .pill { display:inline-block; border:1px solid var(--line); border-radius:7px; padding:5px 8px; font-size:.8rem; white-space:nowrap; }
+    .pill.verified { color:var(--green); background:#59d99b10; }
+    .pill.failed,.pill.partial { color:var(--red); }
+    .pill.changed,.pill.missingMetadata { color:var(--amber); }
+    .progress-log { min-height:100px; max-height:240px; overflow:auto; margin-top:16px; }
+    .operation-banner { display:flex; gap:12px; align-items:center; justify-content:space-between; padding:14px 18px; background:#17313b; border-radius:12px; margin-bottom:18px; }
+    .banner-status { flex:1; min-width:0; }
+    .progress-track { height:10px; background:#07131c; border:1px solid var(--line); border-radius:99px; overflow:hidden; margin:10px 0; }
+    .progress-fill { height:100%; width:0%; background:var(--cyan); transition:width .3s ease; }
+    .progress-track.indeterminate .progress-fill { width:32%; animation:travel 1.6s ease-in-out infinite alternate; }
+    @keyframes travel { from { transform:translateX(0); } to { transform:translateX(210%); } }
+    .progress-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:.9rem; }
+    .progress-caption { color:var(--muted); font-size:.85rem; line-height:1.5; }
+    .phase-warning { color:var(--amber); font-size:.85rem; line-height:1.5; }
+    .stage-progress { margin:16px 0; padding:15px; border:1px solid var(--line); border-radius:12px; }
+    @media (prefers-reduced-motion:reduce) { .progress-track.indeterminate .progress-fill { animation:none; } }
+    [hidden] { display:none !important; }
+    .modal { width:min(720px,100%); max-height:90vh; overflow:auto; }
+    .empty.small { padding:24px; margin-top:18px; font-size:.9rem; }
+    @media (max-width:1050px) { .projects { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:720px) { .shell { width:min(100% - 24px,1480px); padding-top:22px; } header { flex-direction:column; } .header-actions { width:100%; } .header-actions .btn { flex:1; } .overview { grid-template-columns:repeat(2,1fr); } .projects { grid-template-columns:1fr; } .footerbar { flex-direction:column; gap:7px; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand">
+        <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7.5h16M6.5 4v7M12 4v7M17.5 4v7M4 14.5h16M6.5 12v7M12 12v7M17.5 12v7"/></svg></div>
+        <div><div class="eyebrow">Consola local · 2.1</div><h1>Versiones y copias</h1><p class="subtitle">Tus proyectos, sus bases de datos y el estado de sus copias</p></div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" id="logBtn">Ver registro</button>
+        <button class="btn btn-danger" id="restoreAllBtn">Restaurar todos</button>
+        <button class="btn" id="refreshBtn"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8.1 8.1 0 1 0 2 5.3M20 4v7h-7"/></svg>Actualizar datos</button>
+      </div>
+    </header>
+
+    <section class="overview">
+      <div class="metric"><div class="metric-label">Docker Engine</div><div class="metric-value" id="dockerState">Comprobando…</div></div>
+      <div class="metric"><div class="metric-label">Proyectos activos</div><div class="metric-value" id="projectCount">—</div></div>
+      <div class="metric"><div class="metric-label">Listos para actualizar</div><div class="metric-value" id="readyCount">—</div></div>
+      <div class="metric"><div class="metric-label">Copias de bases de datos</div><div class="metric-value" id="backupCount">—</div></div>
+    </section>
+
+    <div class="operation-banner" id="operationBanner" hidden><div class="banner-status"><span id="operationSummary">Operación en curso</span><div class="progress-track indeterminate" id="bannerTrack"><div class="progress-fill" id="bannerFill"></div></div><span id="bannerPhase" class="progress-caption">Esperando información del proceso</span></div><button class="btn" id="showOperationBtn">Ver seguimiento</button></div>
+    <nav class="tabs" aria-label="Secciones"><button class="btn active" id="versionsTab" aria-pressed="true">Versiones de la aplicación</button><button class="btn" id="databasesTab" aria-pressed="false">Copias de bases de datos</button><button class="btn" id="externalTab" aria-pressed="false">Copia a disco externo</button></nav>
+    <div id="versionsPanel">
+    <div class="toolbar"><div><h2>Proyectos de producción</h2><p>Actualizar o restaurar una versión no restaura automáticamente su base de datos.</p></div></div>
+    <section class="projects" id="projects"><div class="empty">Leyendo proyectos…</div></section>
+    </div>
+    <section id="databasesPanel" hidden>
+      <div class="backup-tools"><button class="btn btn-primary" id="backupAllBtn">Crear copias de todas las bases</button><button class="btn" id="verifyAllBtn">Verificar todas las copias</button></div>
+      <div class="notice">Verificar compara cada archivo con su hash original y comprueba su formato básico. <strong>No equivale a probar una restauración.</strong> Estas copias tampoco incluyen fotos ni otros archivos guardados en volúmenes.</div>
+      <div id="databaseProjects"></div>
+    </section>
+    <section id="externalPanel" hidden>
+      <div class="toolbar"><div><h2>Copia completa a disco externo</h2><p>Carpeta del proyecto con sus claves, base de datos, portadas y avatares, y el gestor con el script de restauración. No para la aplicación.</p></div></div>
+      <div class="ext-form">
+        <div><label for="extProject">Proyecto a copiar</label><select id="extProject"></select></div>
+        <div><label for="extDest">Carpeta del disco externo (solo para esto: el espejo borra en ella lo que ya no existe en origen)</label><input id="extDest" placeholder="D:\BackupsMonzon" spellcheck="false" autocomplete="off"></div>
+      </div>
+      <div class="backup-tools"><button class="btn btn-primary" id="extBackupBtn">Copiar el proyecto al disco externo</button><button class="btn" id="extVerifyBtn">Verificar la última copia</button></div>
+      <div class="notice ext-state" id="extLast">Todavía no se ha hecho ninguna copia desde esta consola.</div>
+      <div class="notice">Las fotos y vídeos originales están en el hosting FTP y <strong>no entran en esta copia</strong> (hace falta la sincronización con WinSCP). Los demás proyectos (Pool) no se copian de momento.<br>
+      <strong>Restaurar</strong> (equipo nuevo o limpio): <code>Restaurar-Copia.ps1</code> del gestor, también dentro del propio disco en <code>&lt;equipo&gt;\gestor\</code>. Sin <code>-Ejecutar</code> solo enseña el plan y se niega a tocar una producción en marcha. Una copia sin probar no es una copia: restaura de vez en cuando en otro equipo.</div>
+    </section>
+    <div class="footerbar"><span><span id="lastUpdate">Sin actualizar</span> · GUI 2.1</span><button class="btn btn-danger" id="stopBtn">Detener interfaz local</button></div>
+  </main>
+
+  <aside class="drawer" id="drawer"><div class="drawer-head"><h2 class="drawer-title" id="drawerTitle">Historial</h2><button class="btn" id="closeDrawer">Cerrar</button></div><div class="drawer-body" id="drawerBody"></div></aside>
+  <div class="overlay" id="overlay"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-kicker" id="modalKicker">Confirmación</div><h3 id="modalTitle"></h3><p id="modalText" role="status"></p><div class="change" id="modalChange"></div><label id="confirmLabel" for="confirmInput"></label><input id="confirmInput" autocomplete="off" spellcheck="false">
+    <section class="stage-progress" id="stageProgress" hidden>
+      <div class="progress-heading"><strong id="phaseName">Preparando</strong><span id="phaseNumber"></span></div>
+      <div class="progress-track indeterminate" id="stageTrack" role="progressbar" aria-label="Fases completadas"><div class="progress-fill" id="stageFill"></div></div>
+      <div class="progress-caption" id="phaseDetail"></div>
+      <div class="progress-caption" id="phaseAge"></div>
+      <div class="phase-warning" id="phaseWarning" hidden></div>
+    </section>
+    <pre id="progressLog" class="terminal progress-log" hidden></pre><div class="modal-actions"><button class="btn" id="cancelBtn">Cancelar</button><button class="btn btn-primary" id="confirmBtn" disabled>Confirmar</button></div></div></div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const TOKEN = '__LOCAL_TOKEN__';
+    const state = {data:null, project:null, operation:null, backup:null, required:'', jobRunning:false, view:'versions', jobId:null, pollGeneration:0, progress:null, modalMode:'operation'};
+    const $ = s => document.querySelector(s);
+    const escapeHtml = value => String(value ?? '').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    // PowerShell serializa algunas colecciones vacías como {}. En la interfaz
+    // todas estas propiedades representan listas, por lo que un objeto suelto
+    // debe considerarse una lista vacía y nunca una copia incompleta.
+    const asArray = value => Array.isArray(value) ? value : [];
+    const labels = {verified:'Integridad correcta', unchecked:'Sin verificar', failed:'Verificación fallida', partial:'Incompleta', changed:'Ha cambiado', missingMetadata:'Sin metadatos'};
+    const operations = {
+      promote:{endpoint:'/api/promote',label:'Actualizando aplicación',confirm:'ACTUALIZAR'},
+      rollback:{endpoint:'/api/rollback',label:'Restaurando aplicación',confirm:'RESTAURAR'},
+      restoreAll:{endpoint:'/api/restore-all',label:'Restaurando aplicaciones',confirm:'RESTAURAR TODO'},
+      backup:{endpoint:'/api/backup',label:'Creando copia',confirm:'COPIAR'},
+      backupAll:{endpoint:'/api/backup-all',label:'Creando copias',confirm:'COPIAR'},
+      verify:{endpoint:'/api/verify',label:'Verificando integridad',confirm:'VERIFICAR'},
+      verifyAll:{endpoint:'/api/verify-all',label:'Verificando copias',confirm:'VERIFICAR'},
+      externalBackup:{endpoint:'/api/external-backup',label:'Copiando al disco externo',confirm:'COPIAR'},
+      externalVerify:{endpoint:'/api/external-verify',label:'Verificando la copia externa',confirm:'VERIFICAR'}
+    };
+    function rememberJob(id) { try { if(id)sessionStorage.setItem('dockerUpdaterJob',id);else sessionStorage.removeItem('dockerUpdaterJob'); } catch {} }
+    function savedJob() { try{return sessionStorage.getItem('dockerUpdaterJob');}catch{return null;} }
+    async function api(path, options={}) {
+      const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),15000);
+      const headers={...(options.headers||{})};
+      if(options.method==='POST')headers['X-Local-Token']=TOKEN;
+      if(options.body)headers['Content-Type']='application/json';
+      try {
+        const response=await fetch(path,{...options,headers,signal:controller.signal});
+        const payload=await response.json();
+        if(!response.ok){const e=new Error(payload.error||'Error al consultar el servidor local.');e.httpStatus=response.status;throw e;}
+        return payload;
+      } catch(e) {
+        if(e.name==='AbortError')throw new Error('El servidor local tarda en responder.');
+        throw e;
+      } finally {clearTimeout(timeout);}
+    }
+    function toast(message,error=false) {
+      const el=$('#toast');el.textContent=message;el.className='toast show'+(error?' error':'');
+      clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.className='toast',4000);
+    }
+    function formatElapsed(seconds) {seconds=Math.max(0,Math.floor(seconds));return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');}
+    function formatSize(bytes) {
+      if(bytes<1024)return bytes+' B';
+      if(bytes<1048576)return (bytes/1024).toFixed(1)+' KB';
+      if(bytes<1073741824)return (bytes/1048576).toFixed(1)+' MB';
+      return (bytes/1073741824).toFixed(2)+' GB';
+    }
+    function formatDate(value) {if(!value)return '—';const d=new Date(value);return Number.isNaN(d.getTime())?String(value):d.toLocaleString('es-ES');}
+    function paintProgress(progress) {
+      if(progress)state.progress=progress;
+      const p=state.progress;
+      const hasBytes=p&&Number(p.bytesTotal)>0;
+      const hasStages=p&&Number(p.steps)>0&&Number(p.step)>0;
+      const percent=hasBytes?Math.max(0,Math.min(100,100*Number(p.bytesProcessed)/Number(p.bytesTotal))):hasStages?100*Math.max(0,Math.min(Number(p.steps),Number(p.step)-1))/Number(p.steps):null;
+      for(const [track,fill] of [['stageTrack','stageFill'],['bannerTrack','bannerFill']]){
+        $('#'+track).classList.toggle('indeterminate',percent===null);
+        $('#'+fill).style.width=percent===null?'32%':percent+'%';
+      }
+      if(percent===null)$('#stageTrack').removeAttribute('aria-valuenow');
+      else $('#stageTrack').setAttribute('aria-valuenow',String(Math.round(percent)));
+      $('#stageTrack').setAttribute('aria-valuemin','0');$('#stageTrack').setAttribute('aria-valuemax','100');
+      $('#stageTrack').setAttribute('aria-label',hasBytes?'Bytes comprobados durante SHA256':'Fases completadas, no porcentaje de tiempo');
+      const phase=p?.phase||'Esperando información del proceso';
+      const number=hasStages?'Fase '+p.step+' de '+p.steps:'';
+      $('#phaseName').textContent=phase;$('#phaseNumber').textContent=number;
+      $('#bannerPhase').textContent=(p?.project?p.project+' · ':'')+phase+(number?' · '+number:'');
+      $('#phaseDetail').textContent=hasBytes?
+        formatSize(Number(p.bytesProcessed))+' de '+formatSize(Number(p.bytesTotal))+' · '+Math.floor(percent)+'% del cálculo SHA256. No es el porcentaje de toda la operación.':
+        (p?.detail||'El proceso todavía no ha comunicado su primera fase.')+(hasStages?' La barra representa fases completadas, no tiempo restante.':'');
+      const phaseSeconds=p?.phaseStartedAt?Math.max(0,(Date.now()-new Date(p.phaseStartedAt).getTime())/1000):0;
+      $('#phaseAge').textContent=p?'Tiempo en esta fase: '+formatElapsed(phaseSeconds):'';
+      const age=p?.updatedAt?Math.max(0,(Date.now()-new Date(p.updatedAt).getTime())/1000):0;
+      $('#phaseWarning').hidden=age<90;
+      $('#phaseWarning').textContent='Sin un nuevo hito desde hace '+formatElapsed(age)+'. Puede seguir trabajando; esta señal no demuestra un bloqueo. Revisa la última salida.';
+    }
+    function switchView(view) {
+      state.view=view;
+      $('#versionsPanel').hidden=view!=='versions';$('#databasesPanel').hidden=view!=='databases';$('#externalPanel').hidden=view!=='external';
+      for(const [id,which] of [['versionsTab','versions'],['databasesTab','databases'],['externalTab','external']]){
+        $('#'+id).classList.toggle('active',view===which);$('#'+id).setAttribute('aria-pressed',String(view===which));
+      }
+    }
+    async function loadState(silent=false) {
+      $('#refreshBtn').disabled=true;
+      try {
+        const data=await api('/api/status');
+        data.projects=asArray(data.projects).map(p=>({...p,backups:asArray(p.backups),databaseBackups:asArray(p.databaseBackups),containers:asArray(p.containers)}));
+        state.data=data;render();
+        if(!silent)toast('Datos actualizados');
+      } catch(e){toast(e.message,true);if(!state.data)$('#projects').innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';}
+      finally{$('#refreshBtn').disabled=false;}
+    }
+    function render() {
+      if(!state.data)return;
+      const data=state.data,projects=data.projects;
+      $('#dockerState').textContent=data.dockerReady?'Disponible':'No disponible';
+      $('#dockerState').className='metric-value '+(data.dockerReady?'online':'offline');
+      $('#projectCount').textContent=projects.length;
+      $('#readyCount').textContent=projects.filter(p=>p.promoteReady).length;
+      $('#backupCount').textContent=projects.reduce((n,p)=>n+p.databaseBackups.filter(b=>b.status!=='partial').length,0);
+      $('#lastUpdate').textContent='Última lectura: '+data.generatedAt;
+      $('#restoreAllBtn').disabled=state.jobRunning||!data.dockerReady||!projects.some(p=>p.backups.some(b=>b.valid));
+      $('#backupAllBtn').disabled=state.jobRunning||!data.dockerReady||!projects.some(p=>['postgres','mysql'].includes(p.databaseEngine));
+      $('#verifyAllBtn').disabled=state.jobRunning||!projects.some(p=>p.databaseBackups.some(b=>b.canVerify));
+      $('#stopBtn').disabled=state.jobRunning;
+      renderExternal();
+      $('#projects').innerHTML=projects.map(p=>{
+        const running=p.containers.length,ready=p.productionValid?'Archivos presentes':'Revisar archivos';
+        return '<article class="card"><div class="card-top"></div><div class="card-body">'+
+          '<div class="project-head"><div><h3 class="project-name">'+escapeHtml(p.name)+'</h3><div class="project-id">'+escapeHtml(p.id)+'</div></div><span class="badge '+(running?'':'off')+'">'+running+' activos</span></div>'+
+          '<div class="versions"><div class="version-box"><div class="version-label">Producción</div><div class="version-number">'+escapeHtml(p.productionVersion||'Sin versión')+'</div></div><div class="arrow">→</div><div class="version-box testing"><div class="version-label">Pruebas</div><div class="version-number">'+escapeHtml(p.testingVersion||'Sin candidata')+'</div></div></div>'+
+          '<div class="path" title="'+escapeHtml(p.testingPath||p.root+'\\pruebas')+'">Pruebas: '+escapeHtml(p.testingPath||p.root+'\\pruebas')+'</div>'+
+          '<div class="card-meta"><span>'+p.backups.length+' versiones en old</span><span>'+ready+'</span></div>'+
+          '<div class="card-actions"><button class="btn" data-testing-path="'+escapeHtml(p.id)+'">Ruta pruebas</button><button class="btn" data-history="'+escapeHtml(p.id)+'">Historial</button><button class="btn btn-primary" data-promote="'+escapeHtml(p.id)+'" '+(state.jobRunning||!p.promoteReady||!data.dockerReady?'disabled':'')+'>Actualizar</button></div></div></article>';
+      }).join('')||'<div class="empty">No hay proyectos activos.</div>';
+      $('#databaseProjects').innerHTML=projects.map(p=>{
+        const enabled=['postgres','mysql'].includes(p.databaseEngine),engine=enabled?p.databaseEngine.toUpperCase():'Sin copia de base configurada';
+        const rows=p.databaseBackups.map(b=>'<tr><td>'+escapeHtml(b.name||'Archivo sin nombre')+'<small>'+escapeHtml(String(b.engine||p.databaseEngine||'BD').toUpperCase())+' · '+escapeHtml(formatDate(b.createdAt))+'</small></td>'+
+          '<td>'+formatSize(b.bytes)+'</td><td><span class="pill '+escapeHtml(b.status)+'">'+escapeHtml(labels[b.status]||'Sin verificar')+'</span><small>'+escapeHtml(b.message)+'</small><small>Última comprobación: '+escapeHtml(formatDate(b.checkedAt))+'</small></td>'+
+          '<td><button class="btn" data-verify-project="'+escapeHtml(p.id)+'" data-verify-file="'+escapeHtml(b.name)+'" '+(state.jobRunning||!b.canVerify?'disabled':'')+'>Verificar</button></td></tr>').join('');
+        return '<section class="db-section"><div class="db-heading"><div><h2>'+escapeHtml(p.name)+'</h2><p>'+escapeHtml(engine)+' · '+p.databaseBackups.length+' archivos · Restauración no probada</p></div>'+
+          '<button class="btn btn-primary" data-backup="'+escapeHtml(p.id)+'" '+(!enabled||!data.dockerReady||state.jobRunning?'disabled':'')+'>Crear copia de la base</button></div>'+
+          (rows?'<div class="table-wrap"><table><thead><tr><th scope="col">Copia</th><th scope="col">Tamaño</th><th scope="col">Integridad</th><th scope="col">Acción</th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty small">'+(enabled?'Todavía no hay dumps en old. Puedes crear el primero sin cambiar de versión.':'Configura BD=postgres o BD=mysql en el TXT para crear copias.')+'</div>')+'</section>';
+      }).join('');
+      document.querySelectorAll('[data-history]').forEach(b=>b.onclick=()=>openHistory(b.dataset.history));
+      document.querySelectorAll('[data-testing-path]').forEach(b=>b.onclick=()=>openTestingPath(b.dataset.testingPath));
+      document.querySelectorAll('[data-promote]').forEach(b=>b.onclick=()=>openPromote(b.dataset.promote));
+      document.querySelectorAll('[data-backup]').forEach(b=>b.onclick=()=>openBackup(b.dataset.backup));
+      document.querySelectorAll('[data-verify-project]').forEach(b=>b.onclick=()=>openVerify(b.dataset.verifyProject,b.dataset.verifyFile));
+    }
+    function renderExternal() {
+      const ext=state.data.externalBackup||{},allowed=asArray(ext.projects),select=$('#extProject');
+      const options=state.data.projects.filter(p=>allowed.includes(p.id));
+      const wanted=select.value||(options[0]&&options[0].id)||'';
+      select.innerHTML=options.map(p=>'<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.name)+' ('+escapeHtml(p.id)+')</option>').join('')||'<option value="">Sin proyectos preparados</option>';
+      if(options.some(p=>p.id===wanted))select.value=wanted;
+      if(!state.extDestTouched&&!$('#extDest').value)$('#extDest').value=ext.lastDestination||ext.defaultDestination||'';
+      const busy=state.jobRunning||!state.data.dockerReady||!options.length;
+      $('#extBackupBtn').disabled=busy;$('#extVerifyBtn').disabled=state.jobRunning||!options.length||!ext.last;
+      const last=ext.last,box=$('#extLast');
+      box.className='notice ext-state'+(last?(last.success?' ok':' bad'):'');
+      box.textContent=last?
+        (last.kind==='verify'?'Última verificación: ':'Última copia: ')+(last.success?'CORRECTA':'CON PROBLEMAS')+' · '+last.finishedAt+' · '+last.project+' → '+last.destination+(last.success?'':' · Revisa el registro antes de fiarte de ella.'):
+        'Todavía no se ha hecho ninguna copia desde esta consola.';
+    }
+    function validWindowsPath(value){return /^(?:[A-Za-z]:\\|\\\\[^\\]+\\[^\\]+)/.test(value)&&!/["<>|?*]/.test(value.replace(/^[A-Za-z]:/,''));}
+    function openExternal(kind) {
+      const id=$('#extProject').value,destination=$('#extDest').value.trim(),p=id?findProject(id):null;
+      if(!p){toast('Elige un proyecto.',true);return;}
+      if(!validWindowsPath(destination)){toast('Indica la carpeta del disco externo como ruta de Windows, por ejemplo D:\\BackupsMonzon.',true);return;}
+      state.destination=destination;
+      if(kind==='externalBackup')prepareOperation(kind,p,null,'Copia a disco externo · '+p.name,
+        'Se copiará la carpeta del proyecto (con .env y claves), su base de datos, portadas y avatares, y el gestor; después se verificará. La aplicación no se para. El disco debe estar conectado y desbloqueado (BitLocker).',destination);
+      else if(prepareOperation(kind,p,null,'Verificar copia externa · '+p.name,'Se leerá la última copia del disco sin modificarla: volcado, ZIP y ficheros imprescindibles.',destination))executeOperation();
+    }
+    function findProject(id){return state.data.projects.find(p=>p.id===id);}
+    function prepareOperation(operation,project,backup,title,text,change) {
+      if(state.jobRunning){$('#overlay').classList.add('open');return false;}
+      state.modalMode='operation';state.operation=operation;state.project=project;state.backup=backup;state.required=operations[operation].confirm;
+      $('#modalKicker').textContent=operations[operation].label;$('#modalTitle').textContent=title;$('#modalText').textContent=text;
+      $('#modalChange').textContent=change||'';$('#modalChange').hidden=!change;
+      $('#progressLog').hidden=true;$('#progressLog').textContent='';
+      state.progress=null;$('#stageProgress').hidden=true;paintProgress(null);
+      $('#confirmLabel').hidden=false;$('#confirmInput').hidden=false;$('#confirmInput').disabled=false;
+      $('#confirmLabel').textContent='Escribe '+state.required+' para continuar';
+      $('#confirmInput').value='';$('#confirmBtn').disabled=true;$('#confirmBtn').textContent='Confirmar';
+      $('#confirmBtn').hidden=false;$('#cancelBtn').textContent='Cancelar';
+      $('#overlay').classList.add('open');$('#confirmInput').focus();
+      return true;
+    }
+    function validTestingPath(value) { return !value || /^(?:[A-Za-z]:\\|\\\\[^\\]+\\[^\\]+)/.test(value); }
+    function openTestingPath(id) {
+      if(state.jobRunning){toast('Espera a que termine la operación actual.',true);return;}
+      const p=findProject(id);state.modalMode='testingPath';state.project=p;state.operation=null;state.backup=null;state.required='';
+      $('#modalKicker').textContent='CONFIGURACIÓN';$('#modalTitle').textContent='Carpeta de pruebas · '+p.name;
+      $('#modalText').textContent='Indica una ruta absoluta de Windows. Deja el campo vacío para volver a usar Ruta\\pruebas.';
+      $('#modalChange').textContent='Actual: '+(p.testingPath||p.root+'\\pruebas')+(p.testingPathCustom?' (manual)':' (por defecto)');$('#modalChange').hidden=false;
+      $('#progressLog').hidden=true;$('#stageProgress').hidden=true;$('#confirmLabel').hidden=false;$('#confirmInput').hidden=false;$('#confirmInput').disabled=false;
+      $('#confirmLabel').textContent='Ruta de pruebas';$('#confirmInput').value=p.testingPathCustom?(p.testingPath||''):'';$('#confirmInput').placeholder=p.root+'\\pruebas';
+      $('#confirmBtn').textContent='Guardar ruta';$('#confirmBtn').hidden=false;$('#confirmBtn').disabled=false;$('#cancelBtn').textContent='Cancelar';
+      $('#overlay').classList.add('open');$('#confirmInput').focus();
+    }
+    async function saveTestingPath() {
+      const value=$('#confirmInput').value.trim();
+      if(!validTestingPath(value)){toast('Usa una ruta absoluta de Windows o deja el campo vacío.',true);return;}
+      $('#confirmBtn').disabled=true;$('#confirmBtn').textContent='Guardando…';
+      try {
+        await api('/api/testing-path',{method:'POST',body:JSON.stringify({project:state.project.id,testingPath:value})});
+        state.project.testingPath=value||state.project.root+'\\pruebas';state.project.testingPathCustom=Boolean(value);hideOperation();render();
+        toast(value?'Ruta de pruebas guardada.':'Ruta de pruebas restablecida al valor por defecto.');
+      } catch(e) { toast(e.message,true);$('#confirmBtn').disabled=false;$('#confirmBtn').textContent='Guardar ruta'; }
+    }
+    function openHistory(id) {
+      const p=findProject(id);$('#drawerTitle').textContent='Versiones · '+p.name;
+      $('#drawerBody').innerHTML='<div class="notice">Restaurar aquí cambia el código de la aplicación. Conserva la base de datos actual.</div>'+
+        (p.backups.map(b=>'<div class="backup"><div><div class="backup-version">'+escapeHtml(b.version||'Sin versión')+'</div><div class="backup-name">'+escapeHtml(b.name)+'</div><small>'+(b.valid?'Archivos presentes; funcionamiento no probado':'Faltan archivos')+'</small></div>'+
+          '<button class="btn" data-restore="'+escapeHtml(b.name)+'" '+(!b.valid||!state.data.dockerReady||state.jobRunning?'disabled':'')+'>Restaurar aplicación</button></div>').join('')||'<div class="empty small">No hay versiones archivadas.</div>');
+      document.querySelectorAll('[data-restore]').forEach(b=>b.onclick=()=>openRollback(p.id,b.dataset.restore));
+      $('#drawer').classList.add('open');
+    }
+    function openPromote(id) {
+      const p=findProject(id);
+      prepareOperation('promote',p,null,p.name,'Se archivará producción y se moverá el contenido de pruebas, conservando su carpeta. Si hay base configurada, se copiará antes del cambio.',(p.productionVersion||'?')+' → '+(p.testingVersion||'?'));
+    }
+    function openRollback(id,name) {
+      const p=findProject(id),b=p.backups.find(x=>x.name===name);$('#drawer').classList.remove('open');
+      prepareOperation('rollback',p,b,p.name,'Se guardará la producción actual y se recuperará esta versión de la aplicación. La base actual se copia, pero NO se sustituye por un dump antiguo.',p.productionVersion+' → '+(b.version||b.name));
+    }
+    function openRestoreAll() {
+      const candidates=state.data.projects.filter(p=>p.backups.some(b=>b.valid));
+      prepareOperation('restoreAll',null,null,'Restaurar aplicaciones','Se elegirá la última carpeta de old de cada proyecto. Las bases actuales se conservan. Si uno falla, los demás continúan.',candidates.map(p=>p.name).join(' · '));
+    }
+    function openBackup(id) {
+      const p=id?findProject(id):null;
+      prepareOperation(p?'backup':'backupAll',p,null,p?'Copia · '+p.name:'Copiar todas las bases',
+        'Se pausarán temporalmente los servicios indicados en BDDetener. Se guardará un dump en old y se reactivarán los que estaban arrancados. No se cambiará la versión ni se copiarán archivos de otros volúmenes.',
+        p?p.databaseEngine.toUpperCase():'Proyectos con PostgreSQL o MySQL configurados');
+    }
+    function openVerify(id,name) {
+      const p=id?findProject(id):null,b=p?p.databaseBackups.find(x=>x.name===name):null;
+      if(!prepareOperation(p?'verify':'verifyAll',p,b,'Verificar integridad','Se leerán los archivos sin detener contenedores ni importar datos.',b?b.name:'Todas las copias terminadas'))return;
+      executeOperation();
+    }
+    function hideOperation(){$('#overlay').classList.remove('open');}
+    function setBusy(active) {
+      state.jobRunning=active;$('#operationBanner').hidden=!active;
+      $('#stageProgress').hidden=!active;
+      $('#confirmInput').disabled=active;$('#confirmBtn').disabled=active;
+      $('#cancelBtn').textContent=active?'Ocultar seguimiento':'Cancelar';
+      if(active){$('#confirmInput').hidden=true;$('#confirmLabel').hidden=true;$('#progressLog').hidden=false;}
+      render();
+    }
+    async function waitForJob(id,label) {
+      const started=Date.now(),generation=++state.pollGeneration;
+      let elapsedOffset=0,failedPolls=0;
+      const tick=()=>{
+        const elapsed=formatElapsed(elapsedOffset+(Date.now()-started)/1000);
+        $('#confirmBtn').textContent=label+' · '+elapsed;
+        $('#operationSummary').textContent=label+' · '+elapsed;
+        paintProgress(null);
+      };
+      tick();const timer=setInterval(tick,1000);
+      try {
+        while(generation===state.pollGeneration){
+          try {
+            const job=await api('/api/job?job='+encodeURIComponent(id));
+            failedPolls=0;
+            paintProgress(job.progress);
+            elapsedOffset=Math.max(0,(job.elapsedSeconds||0)-(Date.now()-started)/1000);
+            $('#progressLog').textContent=asArray(job.recentLog).join('\n');
+            $('#progressLog').scrollTop=$('#progressLog').scrollHeight;
+            if(job.state==='completed'||job.state==='unknown')return job;
+            $('#modalText').textContent='Operación en curso. Puedes ocultar este panel o recargar la página; el proceso continuará.';
+          } catch(e) {
+            if(e.httpStatus===400||e.httpStatus===404)return {state:'unknown',success:false,output:'No se pudo recuperar la operación. '+e.message+' Revisa el registro antes de repetir.'};
+            failedPolls++;
+            $('#modalText').textContent=failedPolls<3?
+              'Sin respuesta del servidor local. Reintentando la consulta; no se volverá a ejecutar la operación.':
+              'La interfaz local no responde. La operación ya iniciada sigue independiente. Espera a que termine, cierra la ventana de PowerShell de la GUI y vuelve a abrir Abrir-Actualizador-GUI.cmd para recuperar su resultado.';
+          }
+          await new Promise(resolve=>setTimeout(resolve,1200));
+        }
+      } finally {clearInterval(timer);}
+    }
+    async function followJob(id,label='Operación en curso') {
+      state.jobId=id;rememberJob(id);setBusy(true);
+      const result=await waitForJob(id,label);
+      rememberJob(null);state.jobId=null;setBusy(false);hideOperation();
+      showOutput(result.output||'Operación terminada.',result.success,result.state==='unknown'?'Estado final desconocido':null);
+      await loadState(true);
+    }
+    async function executeOperation() {
+      if(state.jobRunning)return;
+      const op=operations[state.operation],body={confirm:state.required};
+      if(state.project)body.project=state.project.id;
+      if(state.backup)body.backup=state.backup.name;
+      if(state.operation==='externalBackup'||state.operation==='externalVerify')body.destination=state.destination;
+      setBusy(true);$('#operationSummary').textContent='Iniciando…';
+      try {
+        const started=await api(op.endpoint,{method:'POST',body:JSON.stringify(body)});
+        await followJob(started.jobId,op.label);
+      } catch(e) {
+        setBusy(false);hideOperation();
+        showOutput('No se pudo confirmar el resultado: '+e.message+'\nComprueba el seguimiento o el registro antes de repetir la operación.',false,'Revisar operación');
+        await resumeJob();
+      }
+    }
+    function showOutput(text,success,title) {
+      $('#drawerTitle').textContent=title||(success?'Operación completada':'Operación con errores');
+      $('#drawerBody').innerHTML='<pre class="terminal">'+escapeHtml(text)+'</pre>';
+      $('#drawer').classList.add('open');
+    }
+    async function resumeJob() {
+      let id=savedJob();
+      try {
+        if(!id){const active=await api('/api/active-job');id=active.job?.jobId;}
+        if(id){
+          $('#modalTitle').textContent='Seguimiento de operación';$('#modalKicker').textContent='Operación recuperada';$('#modalChange').hidden=true;$('#overlay').classList.add('open');
+          await followJob(id);
+        }
+      } catch(e){toast('No se pudo recuperar el seguimiento. '+e.message,true);}
+    }
+    async function showLog(){
+      try{const result=await api('/api/log');showOutput(asArray(result.lines).join('\n')||'El registro está vacío.',true,'Registro de operaciones');}
+      catch(e){toast(e.message,true);}
+    }
+    $('#versionsTab').onclick=()=>switchView('versions');$('#databasesTab').onclick=()=>switchView('databases');$('#externalTab').onclick=()=>switchView('external');
+    $('#extBackupBtn').onclick=()=>openExternal('externalBackup');$('#extVerifyBtn').onclick=()=>openExternal('externalVerify');$('#extDest').oninput=()=>{state.extDestTouched=true;};
+    $('#refreshBtn').onclick=()=>loadState();$('#logBtn').onclick=showLog;$('#restoreAllBtn').onclick=openRestoreAll;
+    $('#backupAllBtn').onclick=()=>openBackup(null);$('#verifyAllBtn').onclick=()=>openVerify(null,null);
+    $('#showOperationBtn').onclick=()=>$('#overlay').classList.add('open');
+    $('#closeDrawer').onclick=()=>$('#drawer').classList.remove('open');$('#cancelBtn').onclick=hideOperation;
+    $('#confirmInput').oninput=e=>$('#confirmBtn').disabled=state.modalMode==='testingPath'?!validTestingPath(e.target.value.trim()):e.target.value!==state.required;
+    $('#confirmInput').onkeydown=e=>{if(e.key==='Enter'&&!$('#confirmBtn').disabled){if(state.modalMode==='testingPath')saveTestingPath();else executeOperation();}};
+    $('#confirmBtn').onclick=()=>{if(state.modalMode==='testingPath')saveTestingPath();else executeOperation();};
+    $('#overlay').onclick=e=>{if(e.target.id==='overlay')hideOperation();};
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){hideOperation();$('#drawer').classList.remove('open');}});
+    $('#stopBtn').onclick=async()=>{
+      if(state.jobRunning||!confirm('¿Cerrar la interfaz local? Los contenedores seguirán funcionando.'))return;
+      try{await api('/api/shutdown',{method:'POST',body:'{}'});document.body.innerHTML='<main class="shell"><h1>Interfaz cerrada</h1><p>Puedes cerrar esta pestaña.</p></main>';}
+      catch(e){toast(e.message,true);}
+    };
+    async function boot(){await loadState(true);await resumeJob();}
+    boot();
+  </script>
+</body>
+</html>

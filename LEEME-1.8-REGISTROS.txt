@@ -1,0 +1,20 @@
+ACTUALIZACION 1.8 - registros reales de la GUI
+
+El boton Ver registro mostrara:
+ - mensajes del trabajador local de PowerShell;
+ - los ultimos trabajos, con estado: EN COLA, EJECUTANDO, COMPLETADO o ERROR;
+ - la salida de cada trabajo;
+ - el registro general si existe.
+
+Tambien se escribe salida desde el primer segundo: trabajo recibido, inicio del actualizador y codigo final.
+
+INSTALACION:
+1. Copia la carpeta Gui-Docker completa y los dos PS1 de este ZIP dentro de:
+   C:\Users\ServerIT\Desktop\Docker-Autoarranque\
+   Acepta reemplazar.
+2. Ejecuta:
+   cd "C:\Users\ServerIT\Desktop\Docker-Autoarranque"
+   docker compose -f ".\Gui-Docker\compose.yml" up --detach --build
+3. Abre la GUI y pulsa Ver registro.
+
+No reinstales la tarea de autoarranque.

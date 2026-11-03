@@ -1,0 +1,16 @@
+ACTUALIZACION 1.7 - listas vacias del panel
+
+Corrige el error: Cannot read properties of undefined (reading toUpperCase).
+
+La causa era una respuesta de PowerShell para Pool sin copias: databaseBackups: {}. El panel la trataba como una fila de copia y fallaba al mostrar el motor.
+
+INSTALACION:
+1. Copia la carpeta actualizador-ui completa de este ZIP dentro de:
+   C:\Users\ServerIT\Desktop\Docker-Autoarranque\Gui-Docker\
+   y acepta reemplazar archivos.
+2. Ejecuta:
+   cd "C:\Users\ServerIT\Desktop\Docker-Autoarranque"
+   docker compose -f ".\Gui-Docker\compose.yml" up --detach --build
+3. Recarga el navegador con Ctrl+F5.
+
+No modifica la tarea de arranque, los contenedores ni proyectos.

@@ -1,0 +1,10 @@
+GUI DOCKER API 1.5 - PANEL DE PROYECTOS
+
+El trabajador ya genera correctamente Gui-Docker\dashboard.json con Fotos,
+Pool y sus contenedores. Esta correccion monta esa carpeta explicitamente en el
+contenedor API para que Linux pueda leer el archivo.
+
+Copia los archivos sobre Docker-Autoarranque y ejecuta:
+docker compose -f "C:\Users\ServerIT\Desktop\Docker-Autoarranque\Gui-Docker\compose.yml" up --detach --build
+
+No cambia proyectos-produccion.txt ni los contenedores de tus proyectos.

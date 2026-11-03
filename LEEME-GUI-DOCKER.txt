@@ -1,0 +1,35 @@
+GUI WEB CON API DENTRO DE DOCKER
+
+ARQUITECTURA
+- El navegador se conecta a http://127.0.0.1:8780.
+- La API Node se ejecuta dentro del contenedor docker-updater-api.
+- La API no ejecuta PowerShell ni toca Docker directamente: deja una cola en
+  gui-jobs.
+- Trabajador-GUI-Docker.ps1 se ejecuta localmente sin servidor web, recoge la
+  cola y utiliza los scripts actuales para crear, verificar, actualizar y
+  restaurar. Es quien escribe progreso, salida y resultado.
+
+Esto elimina el servidor HTTP PowerShell que se bloqueaba. La API y el trabajo
+real quedan separados: cerrar o recargar el navegador no cancela una operacion.
+
+La API escucha en todas las interfaces dentro de su contenedor para que Docker
+pueda redirigirle el puerto. Compose publica ese puerto solamente como
+127.0.0.1:8780 en Windows, por lo que no queda accesible desde la red.
+
+El estado generado por el trabajador se guarda en Gui-Docker\\dashboard.json.
+La mayuscula de la carpeta es importante dentro del contenedor Linux.
+Compose monta esa carpeta explicitamente y en solo lectura para la API.
+
+INSTALACION
+1. Espera a que no haya operaciones en curso.
+2. Extrae esta entrega en C:\Users\ServerIT\Desktop\Docker-Autoarranque.
+3. Mantén proyectos-produccion.txt y todos tus scripts existentes.
+4. Abre Abrir-GUI-Docker.cmd. Docker construira la API la primera vez.
+5. Entra en http://127.0.0.1:8780 si no se abre automaticamente.
+
+Si la API no arranca, Abrir-GUI-Docker.cmd no se cerrara: mostrara el estado y
+los ultimos 80 registros del contenedor para poder localizar el error.
+
+La interfaz anterior en 8765 se puede cerrar: ya no se utiliza.
+No expongas el puerto 8780 por Tailscale Funnel ni por el router: es un panel
+local de administracion.

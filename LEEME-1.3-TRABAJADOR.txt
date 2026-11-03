@@ -1,0 +1,15 @@
+GUI DOCKER API 1.3 - DIAGNOSTICO DEL TRABAJADOR
+
+La API puede responder aunque el trabajador PowerShell que genera dashboard.json
+haya fallado. Sin dashboard la GUI muestra 0 proyectos y Docker no disponible.
+
+Abrir-GUI-Docker.cmd ahora:
+1. Detiene solo el trabajador anterior (si no hay un trabajo en curso).
+2. Inicia la version actual del trabajador.
+3. Espera un heartbeat nuevo.
+4. Si falla, deja la consola abierta y muestra worker.log.
+
+Copia los archivos sobre:
+C:\Users\ServerIT\Desktop\Docker-Autoarranque
+
+No sustituye proyectos-produccion.txt.

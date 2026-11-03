@@ -1,0 +1,21 @@
+ACTUALIZACION 2.0 - trabajador persistente
+
+CORRECCION:
+La copia de Fotos termino correctamente, pero el trabajador PowerShell se detuvo despues. Por eso el trabajo siguiente se quedo en cola.
+
+Esta entrega incorpora un supervisor que vuelve a iniciar el trabajador si se detiene y conserva los errores tecnicos en:
+Gui-Docker\worker-process.stderr.log
+Gui-Docker\worker-supervisor.log
+
+INSTALACION:
+1. Copia TODO el contenido a C:\Users\ServerIT\Desktop\Docker-Autoarranque\ y reemplaza.
+2. Abre PowerShell normal y ejecuta UNA VEZ:
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\ServerIT\Desktop\Docker-Autoarranque\Instalar-Trabajador-GUI-Automatico.ps1"
+3. Si quedo una operacion en cola de antes, ejecuta:
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\ServerIT\Desktop\Docker-Autoarranque\Reparar-GUI-Atascada.ps1"
+4. Abre la GUI normal.
+
+DIAGNOSTICO:
+Ejecuta Abrir-GUI-Docker-Diagnostico.cmd. La consola no se cerrara.
+
+No toca contenedores ni reinstala el autoarranque de produccion.

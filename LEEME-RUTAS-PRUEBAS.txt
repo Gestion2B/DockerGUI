@@ -1,0 +1,24 @@
+ACTUALIZACION - RUTAS DE PRUEBAS CONFIGURABLES
+
+No reemplaces proyectos-produccion.txt: conservas tu configuracion actual.
+
+QUE CAMBIA:
+ - Puedes añadir manualmente en cada proyecto:
+   Pruebas=C:\Ruta\De\La\Carpeta\De\Pruebas
+ - Si la linea no existe, se sigue usando Ruta\pruebas, como hasta ahora.
+ - En la GUI, cada tarjeta tiene el boton Ruta pruebas. Guarda una ruta absoluta o deja el campo vacio para volver al valor por defecto.
+
+INSTALACION:
+1. Copia los tres PS1 de este ZIP en C:\Users\ServerIT\Desktop\Docker-Autoarranque\
+   Actualizador-Proyectos.ps1
+   Iniciar-Docker-Produccion-Completo.ps1
+   Trabajador-GUI-Docker.ps1
+2. Copia server.js e index.html dentro de la carpeta Gui-Docker indicada en el ZIP.
+3. Reinicia el trabajador:
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\ServerIT\Desktop\Docker-Autoarranque\Reiniciar-Trabajador-GUI-Docker.ps1"
+4. Reconstruye la interfaz:
+   cd "C:\Users\ServerIT\Desktop\Docker-Autoarranque"
+   docker compose -f ".\Gui-Docker\compose.yml" up --detach --build
+5. En el navegador pulsa Ctrl+F5.
+
+IMPORTANTE: la ruta de pruebas debe tener el compose configurado y VERSION.txt, igual que antes. Produccion y old no cambian.

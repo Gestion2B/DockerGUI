@@ -1,0 +1,28 @@
+# Solo se arrancan y gestionan las carpetas "produccion" de estos proyectos.
+# Ruta debe apuntar a la carpeta raiz del proyecto, que contiene produccion,
+# pruebas y old.
+
+[app-fotos]
+Nombre=Proyecto Fotos
+Ruta=C:\Users\ServerIT\Desktop\Docker-Proyectos\app-fotos
+Compose=docker-compose.yml
+Activo=si
+Funnel=/fotos=localhost:3000
+BD=postgres
+BDServicio=postgres
+BDNombre=monzon_media
+BDUsuario=monzon_user
+BDDetener=backend, pgbackups
+
+[pool-app]
+Nombre=Proyecto Pool
+Ruta=C:\Users\ServerIT\Desktop\Docker-Proyectos\PoolDocker
+Compose=docker-compose.yml
+Activo=si
+Funnel=/pool=localhost:8080
+BD=mysql
+BDServicio=mysql
+BDNombre=auto
+BDUsuario=root
+BDDetener=pool-app, phpmyadmin
+Pruebas=C:\Users\ServerIT\Desktop\Docker-Proyectos\PoolDocker\pruebas\Pool

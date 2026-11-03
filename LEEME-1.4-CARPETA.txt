@@ -1,0 +1,11 @@
+GUI DOCKER API 1.4 - CORRECCION DE RUTA
+
+El trabajador Windows escribe dashboard.json dentro de Gui-Docker (G y D en
+mayuscula). La API que se ejecuta en Linux lo buscaba como gui-docker, que es
+una ruta distinta dentro del contenedor. Por eso aparecia Docker no disponible
+y 0 proyectos aunque Docker y el trabajador funcionasen.
+
+Copia los archivos y ejecuta:
+docker compose -f "C:\Users\ServerIT\Desktop\Docker-Autoarranque\Gui-Docker\compose.yml" up --detach --build
+
+O simplemente abre Abrir-GUI-Docker.cmd. No cambia el TXT ni los proyectos.

@@ -1,0 +1,10 @@
+# Estado local de cada equipo (no se versiona: git pull nunca debe pisarlo)
+proyectos-produccion.txt
+gui-jobs/
+Gui-Docker/dashboard.json
+Gui-Docker/bridge.json
+Gui-Docker/worker*.log
+actualizaciones.log
+copia-externa.ultimo-*
+*.bak-*
+*.tmp

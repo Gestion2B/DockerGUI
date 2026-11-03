@@ -1,0 +1,15 @@
+ACTUALIZACION 1.6 - panel Docker
+
+Causa corregida: dashboard.json estaba en UTF-8 con BOM. Node rechazaba el JSON y mostraba 0 proyectos aunque el trabajador funcionaba.
+
+INSTALACION:
+1. Sustituye estos tres archivos en C:\Users\ServerIT\Desktop\Docker-Autoarranque\Gui-Docker\ :
+   - server.js
+   - compose.yml
+   - Dockerfile
+2. Abre PowerShell y ejecuta:
+   cd "C:\Users\ServerIT\Desktop\Docker-Autoarranque"
+   docker compose -f ".\Gui-Docker\compose.yml" up --detach --build
+3. Pulsa Actualizar datos en http://127.0.0.1:8780
+
+No reinstales la tarea de autoarranque. No copies ni modifiques dashboard.json.

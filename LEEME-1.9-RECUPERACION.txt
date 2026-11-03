@@ -1,0 +1,19 @@
+ACTUALIZACION 1.9 - recuperacion y diagnostico
+
+NUEVO:
+ - Abrir-GUI-Docker-Diagnostico.cmd: deja una consola abierta con Docker, API, trabajador, cola y ultimos logs.
+ - Reparar-GUI-Atascada.ps1: libera un trabajo abandonado SOLO si no hay trabajador activo. No repite copias para evitar duplicados.
+ - Ver registro del panel muestra estados y salida de los ultimos trabajos.
+
+INSTALACION:
+1. Copia todo el contenido de este ZIP a:
+   C:\Users\ServerIT\Desktop\Docker-Autoarranque\
+   Acepta reemplazar.
+2. Si la interfaz esta bloqueada, ejecuta primero:
+   Reparar-GUI-Atascada.ps1
+3. Para investigar desde una consola que no se cierra, ejecuta:
+   Abrir-GUI-Docker-Diagnostico.cmd
+4. Para abrir normalmente, usa:
+   Abrir-GUI-Docker.cmd
+
+No reinstala ni cambia la tarea de autoarranque. No para contenedores.

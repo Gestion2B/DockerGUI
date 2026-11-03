@@ -1,0 +1,25 @@
+CONSOLA GESTOR DOCKER
+
+Este script no usa navegador, Node, API Docker local, cola ni trabajador de la GUI.
+Ejecuta directamente Actualizador-Proyectos.ps1 y muestra toda la salida en la terminal.
+
+INSTALACION:
+Copia Consola-Gestor-Docker.ps1 a C:\Users\ServerIT\Desktop\Docker-Autoarranque\
+
+ABRIR MENU:
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\ServerIT\Desktop\Docker-Autoarranque\Consola-Gestor-Docker.ps1"
+
+ACCIONES DIRECTAS (la terminal pedira confirmacion; usa -Force solo si sabes lo que haces):
+Estado:
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\ServerIT\Desktop\Docker-Autoarranque\Consola-Gestor-Docker.ps1" -Action Status
+
+Copia Fotos:
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\ServerIT\Desktop\Docker-Autoarranque\Consola-Gestor-Docker.ps1" -Action BackupDatabase -Project app-fotos
+
+Todas las bases:
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\ServerIT\Desktop\Docker-Autoarranque\Consola-Gestor-Docker.ps1" -Action BackupAllDatabases
+
+Registros:
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\ServerIT\Desktop\Docker-Autoarranque\Consola-Gestor-Docker.ps1" -Action Logs
+
+Necesita Docker Engine disponible, pero no la interfaz web.

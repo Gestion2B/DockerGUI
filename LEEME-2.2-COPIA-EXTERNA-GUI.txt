@@ -1,0 +1,37 @@
+2.2 - COPIA A DISCO EXTERNO DESDE LA GUI + RESTAURACION
+
+QUE HAY
+ - GUI > pestana "Copia a disco externo": eliges el proyecto, la carpeta del disco y pulsas
+   "Copiar el proyecto al disco externo". Se ve el avance por fases y la salida en vivo.
+   "Verificar la ultima copia" solo lee y comprueba, no copia.
+ - De momento solo app-fotos (Pool NO se copia). Para anadir otro proyecto hay que prepararlo
+   (lista externalProjects de Gui-Docker\server.js y Trabajador-GUI-Docker.ps1, y su restauracion).
+ - Consola: opcion [A] copia de UN proyecto, opcion [B] restaurar (primero muestra el plan).
+   Directo:  Consola-Gestor-Docker.ps1 -Action ExternalBackup -Project app-fotos -Destino D:\BackupsMonzon
+ - Restaurar-Copia.ps1: restaura carpeta + claves + base + uploads en un equipo nuevo o limpio.
+   Tambien va DENTRO de la copia: D:\BackupsMonzon\<EQUIPO>\gestor\Restaurar-Copia.ps1
+
+QUE COPIA (app-fotos)
+ - carpeta del proyecto entera (con .env, claves, produccion, old, pruebas)
+ - la carpeta de este gestor (scripts, proyectos-produccion.txt, Funnel, Restaurar-Copia.ps1)
+ - volcado de la base (en caliente, sin parar la app) + portadas y avatares, en un ZIP con fecha
+ - opcional: fotos del hosting FTP con WinSCP (Copia-Externa.ps1 -WinScpSesion "NombreSesion")
+ NO copia: las fotos y videos del hosting FTP (si no usas WinSCP), ni el proyecto Pool.
+
+INSTALAR / ACTUALIZAR EN EL SERVIDOR
+ 1. git pull en C:\Users\ServerIT\Desktop\Docker-Autoarranque (ver README.md la primera vez).
+ 2. Doble clic en Abrir-GUI-Docker.cmd (reinicia el trabajador y reconstruye la API: necesario
+    para que la GUI vea la pestana nueva).
+ 3. Conecta y desbloquea el disco cifrado (BitLocker To Go).
+
+RESTAURAR (equipo nuevo o limpio)
+   powershell -ExecutionPolicy Bypass -File D:\BackupsMonzon\<EQUIPO>\gestor\Restaurar-Copia.ps1
+   (sin -Ejecutar solo ensena el plan)   ... -DestinoProyecto C:\...\app-fotos -Ejecutar
+ Seguridad: se niega si ya hay contenedores de app-fotos (produccion viva); nunca borra (renombra la
+ carpeta existente); pide escribir RESTAURAR. Restaurar una copia antigua sobre una base viva PIERDE
+ lo creado despues (la base solo guarda punteros a las fotos del FTP; los archivos no se tocan).
+
+IMPORTANTE
+ - La carpeta del disco es SOLO para esto: el espejo borra en ella lo que ya no existe en origen.
+ - La copia lleva contrasenas y datos personales: disco con BitLocker To Go.
+ - Una copia sin probar no es una copia: restaura de vez en cuando en otro equipo.

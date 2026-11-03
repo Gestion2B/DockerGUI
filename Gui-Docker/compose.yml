@@ -1,0 +1,17 @@
+services:
+  docker-updater-api:
+    build:
+      context: .
+    container_name: docker-updater-api
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8780:8780"
+    environment:
+      PORT: "8780"
+      DATA_ROOT: /data
+    volumes:
+      # Scripts, cola, resultados y configuracion del actualizador.
+      - ..:/data
+      # Estado generado por el trabajador PowerShell. Se monta de forma
+      # explicita para que dashboard.json sea visible tambien en Linux.
+      - .:/data/Gui-Docker:ro
