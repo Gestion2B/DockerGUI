@@ -178,7 +178,7 @@ try {
         Say "3/5 Arrancando la base de datos ('$servicioBd') y restaurando..." 'Cyan'
         Push-Location $dirCompose
         try {
-            docker compose up -d $servicioBd
+            docker compose --project-name $Proyecto up -d $servicioBd
             if ($LASTEXITCODE -ne 0) { Stop-Restore "docker compose no pudo arrancar '$servicioBd'." }
         } finally { Pop-Location }
         $pg = $null; $t0 = Get-Date
@@ -215,7 +215,7 @@ try {
         Say '4/5 Arrancando la aplicacion...' 'Cyan'
         Push-Location $dirCompose
         try {
-            docker compose up -d --build
+            docker compose --project-name $Proyecto up -d --build
             if ($LASTEXITCODE -ne 0) { Stop-Restore 'docker compose up --build fallo.' }
         } finally { Pop-Location }
         $be = $null; $t0 = Get-Date
@@ -234,7 +234,7 @@ try {
             try { $r = Invoke-WebRequest -Uri 'http://localhost:3000/api/health' -UseBasicParsing -TimeoutSec 5; if ($r.StatusCode -eq 200) { $ok = $true; break } } catch { }
             Start-Sleep -Seconds 3
         }
-        if ($ok) { Say '    /api/health responde 200.' 'Green' } else { $script:Avisos++; Say '    AVISO: /api/health no respondio; mira "docker compose logs backend".' 'Yellow' }
+        if ($ok) { Say '    /api/health responde 200.' 'Green' } else { $script:Avisos++; Say '    AVISO: /api/health no respondio; mira "docker compose --project-name app-fotos logs backend" (en la carpeta produccion).' 'Yellow' }
     } finally {
         Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
     }
